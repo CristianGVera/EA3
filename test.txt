@@ -1,7 +1,4 @@
 WRITE "Ingrese un valor pivot mayor o igual a 1: "
 READ pivot
-WRITE pivot
 resul = cola ( pivot ; [1,2,3] )
-resul = cola ( pivot ; [] )
-WRITE "El resultado es: "
 WRITE resul

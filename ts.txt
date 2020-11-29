@@ -6,4 +6,3 @@ resul                                                                           
 _1                                                                                                   | CTE ENTERA     | 1                                                                                                   
 _2                                                                                                   | CTE ENTERA     | 2                                                                                                   
 _3                                                                                                   | CTE ENTERA     | 3                                                                                                   
-_"El resultado es: "                                                                                 | CTE STRING     | "El resultado es: "                                                                                 

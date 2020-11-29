@@ -1,13 +1,32 @@
 PADRE                           |	HIJO IZQ                        |	HIJO DER                        
 sentencia                       	sentencia                       	WRITE                           
-sentencia                       	sentencia                       	WRITE                           
-sentencia                       	sentencia                       	WRITE                           
-sentencia                       	sentencia                       	=                               
-sentencia                       	sentencia                       	WRITE                           
+sentencia                       	sentencia                       	Sentencia                       
 sentencia                       	WRITE                           	READ                            
 WRITE                           	stdout                          	"Ingrese un valor pivot mayor o igual a 1: "
 READ                            	stdin                           	pivot                           
-WRITE                           	stdout                          	pivot                           
-WRITE                           	stdout                          	"La lista está vacía."        
-WRITE                           	stdout                          	"El resultado es: "             
+Sentencia                       	=                               	Sentencia                       
+=                               	@pivot                          	pivot                           
+Sentencia                       	IF                              	Sentencia                       
+IF                              	Mayor                           	bloque_if                       
+Mayor                           	@pivot                          	@cero                           
+bloque_if                       	=                               	=                               
+=                               	@pivot                          	-                               
+-                               	@pivot                          	@uno                            
+=                               	resul                           	+                               
++                               	resul                           	3                               
+Sentencia                       	IF                              	IF                              
+IF                              	Mayor                           	bloque_if                       
+Mayor                           	@pivot                          	@cero                           
+bloque_if                       	=                               	=                               
+=                               	@pivot                          	-                               
+-                               	@pivot                          	@uno                            
+=                               	resul                           	+                               
++                               	resul                           	2                               
+IF                              	Mayor                           	bloque_if                       
+Mayor                           	@pivot                          	@cero                           
+bloque_if                       	=                               	=                               
+=                               	@pivot                          	-                               
+-                               	@pivot                          	@uno                            
+=                               	resul                           	+                               
++                               	resul                           	1                               
 WRITE                           	stdout                          	resul                           
