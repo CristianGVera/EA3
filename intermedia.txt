@@ -1,27 +1,15 @@
 PADRE                           |	HIJO IZQ                        |	HIJO DER                        
 sentencia                       	sentencia                       	WRITE                           
-sentencia                       	sentencia                       	Sentencia                       
+sentencia                       	sentencia                       	IF                              
 sentencia                       	WRITE                           	READ                            
 WRITE                           	stdout                          	"Ingrese un valor pivot mayor o igual a 1: "
 READ                            	stdin                           	pivot                           
-Sentencia                       	=                               	Sentencia                       
+IF                              	Mayor                           	cuerpo                          
+Mayor                           	pivot                           	@cantLista1                     
+cuerpo                          	WRITE                           	else                            
+WRITE                           	stdout                          	@errorCantLista                 
+else                            	=                               	IF                              
 =                               	@pivot                          	pivot                           
-Sentencia                       	IF                              	Sentencia                       
-IF                              	Mayor                           	bloque_if                       
-Mayor                           	@pivot                          	@cero                           
-bloque_if                       	=                               	=                               
-=                               	@pivot                          	-                               
--                               	@pivot                          	@uno                            
-=                               	resul                           	+                               
-+                               	resul                           	3                               
-Sentencia                       	IF                              	IF                              
-IF                              	Mayor                           	bloque_if                       
-Mayor                           	@pivot                          	@cero                           
-bloque_if                       	=                               	=                               
-=                               	@pivot                          	-                               
--                               	@pivot                          	@uno                            
-=                               	resul                           	+                               
-+                               	resul                           	2                               
 IF                              	Mayor                           	bloque_if                       
 Mayor                           	@pivot                          	@cero                           
 bloque_if                       	=                               	=                               

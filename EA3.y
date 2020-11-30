@@ -53,26 +53,31 @@ t_nodo *asig;
 t_nodo *cola;
 t_nodo *lista;
 int nroNodo = 0;
-char ultimoId [100];
+char ultimoId[100];
+char idPivot[100];
 int esListaVacia = 0;
 int listaConst[100];
 int tope = 0;
 int nroAux = 1;
 int nroIf = 0;
 t_pila pilaIf;
+t_pila pilaTope;
+int cantLista = 0;
 
 void insertarHijo(t_nodo ** , t_nodo * );
 t_nodo * crearHojaT(const char*);
 t_nodo * crearNodo(const t_info *, t_nodo *, t_nodo *);
 t_nodo * crearHoja(const t_info *);
 t_nodo * restarCantidad();
-t_nodo * sumarValor(int);
-t_nodo * crearNodoBloqueIf(int);
+t_nodo * sumarValor(int, char *);
+t_nodo * crearNodoBloqueIf(int, char *);
 t_nodo * crearNodoCondicion();
 void crearPila(t_pila* );
 int ponerEnPila(t_pila*,t_nodo*);
 int sacar_de_pila(t_pila*,t_nodo*);
-t_nodo * asignarPivot();
+t_nodo * asignarPivot(char *);
+t_nodo * crearCondicionValidacion(int, char *);
+t_nodo * crearMensajeValidacion();
 
 /*Generar archivo ts.txt*/
 void crearArchivoTS(void);
@@ -168,30 +173,30 @@ asig:   ID  {
                             if(esListaVacia == 0)
                             {
                                 asig = cola;
-                                /*t_info info;
-                                strcpy(info.valor,"=");
-                                t_info info_id;
-                                strcpy(info_id.valor,ultimoId);
-                                asig= crearNodo(&info,crearHoja(&info_id),cola);*/
                             }	
                             else
                             {
                                 asig=crearHojaT("WRITE");
                                 insertarHijo(&asig->izq,crearHojaT("stdout"));
-                                insertarHijo(&asig->der,crearHojaT("\"La lista está vacía.\""));
+                                insertarHijo(&asig->der,crearHojaT("@listaVacia"));
                                 esListaVacia = 0;
                             }
                         };
 cola: RES_COLA RES_PARA ID RES_PYC RES_CORA lista RES_CORC RES_PARC {
+    strcpy(idPivot, $3);
     cola = lista;
+    t_info infoTope;
+    infoTope.nro = tope;
+    t_nodo * nodoPila= crearHoja(&infoTope);
+    cantLista++;
+    ponerEnPila(&pilaTope, nodoPila);
     for(int x = 0 ; x < tope; x++)
     {
         if(x == 0)
         {
-
             t_info info_if;
             strcpy(info_if.valor,"IF");
-            t_nodo * bloque_if = crearNodoBloqueIf(x);
+            t_nodo * bloque_if = crearNodoBloqueIf(x, ultimoId);
             t_nodo * condicion = crearNodoCondicion();
             cola = crearNodo(&info_if,condicion,bloque_if);
         }
@@ -199,7 +204,7 @@ cola: RES_COLA RES_PARA ID RES_PYC RES_CORA lista RES_CORC RES_PARC {
         {
             t_info info_if;
             strcpy(info_if.valor,"IF");
-            t_nodo * bloque_if = crearNodoBloqueIf(x);
+            t_nodo * bloque_if = crearNodoBloqueIf(x, ultimoId);
             t_nodo * condicion = crearNodoCondicion();
             t_nodo * aux = crearNodo(&info_if,condicion,bloque_if);
             t_info sentencia;
@@ -208,10 +213,18 @@ cola: RES_COLA RES_PARA ID RES_PYC RES_CORA lista RES_CORC RES_PARC {
         }
     }
     
-    t_nodo * pivot = asignarPivot();
-    t_info sentencia;
-    strcpy(sentencia.valor,"Sentencia");
-    cola = crearNodo(&sentencia,pivot,cola);
+    t_nodo * pivot = asignarPivot(idPivot);
+    t_info bloque;
+    strcpy(bloque.valor,"else");
+    t_nodo * falso = crearNodo(&bloque,pivot,cola);
+    t_info cuerpo;
+    strcpy(cuerpo.valor,"cuerpo");
+    t_nodo * verdadero = crearMensajeValidacion();
+    t_nodo * cuerpoIf = crearNodo(&cuerpo,verdadero,falso);
+    t_info nodoIf;
+    strcpy(nodoIf.valor,"IF");
+    t_nodo *condicion = crearCondicionValidacion(cantLista, idPivot);
+    cola = crearNodo(&nodoIf,condicion,cuerpoIf);
                                                                         
                                                                         printf("RES_COLA RES_PARA ID RES_PYC RES_CORA lista RES_CORC RES_PARC\n");
                                                                     };
@@ -267,6 +280,7 @@ int main(int argc, char *argv[])
     else
     { 
         crearPila(&pilaIf);
+        crearPila(&pilaTope);
         yyparse();
     }
 	fclose(yyin);
@@ -340,7 +354,6 @@ int ponerEnPila(t_pila* pp,t_nodo* nodo)
 int sacar_de_pila(t_pila* pp,t_nodo* info)
 {
     if(!*pp){
-        printf("PILA NULA**************************************************\n");
         return 0;
     }
     *info=(*pp)->info;
@@ -368,14 +381,14 @@ t_nodo * restarCantidad()
     return aux;
 }
 
-t_nodo * sumarValor(int x)
+t_nodo * sumarValor(int x, char * id)
 {
     char valorString[100];
     t_nodo *aux;
     t_info rpadre;
     strcpy(rpadre.valor,"+");
     t_info rhizq;
-    strcpy(rhizq.valor,"resul");
+    strcpy(rhizq.valor,id);
     t_info rhder;
     sprintf(valorString, "%d", listaConst[x]);
     strcpy(rhder.valor,valorString);
@@ -383,19 +396,19 @@ t_nodo * sumarValor(int x)
     t_info apadre;
     strcpy(apadre.valor,"=");
     t_info ahizq;
-    strcpy(ahizq.valor,"resul");
+    strcpy(ahizq.valor,id);
     aux = crearNodo(&apadre,crearHoja(&ahizq),aux);
 
     return aux;
 }
 
-t_nodo * crearNodoBloqueIf(int x)
+t_nodo * crearNodoBloqueIf(int x, char * id)
 {
     t_nodo *aux;
     t_info info;
     strcpy(info.valor,"bloque_if");
     t_nodo *auxDer = restarCantidad();
-    t_nodo *auxIzq = sumarValor(x);
+    t_nodo *auxIzq = sumarValor(x, id);
     aux = crearNodo(&info,auxDer,auxIzq);
 
     return aux;
@@ -415,7 +428,7 @@ t_nodo * crearNodoCondicion()
     return aux;
 }
 
-t_nodo * asignarPivot()
+t_nodo * asignarPivot(char * idPivot)
 {
     t_nodo *aux;
     t_info padre;
@@ -423,7 +436,40 @@ t_nodo * asignarPivot()
     t_info hizq;
     strcpy(hizq.valor,"@pivot");
     t_info hder;
-    strcpy(hder.valor,"pivot");
+    strcpy(hder.valor,idPivot);
+    aux = crearNodo(&padre,crearHoja(&hizq),crearHoja(&hder));
+
+    return aux;
+}
+
+t_nodo * crearCondicionValidacion(int cantLista, char * idPivot)
+{
+    t_nodo * aux;
+    t_info padre;
+    strcpy(padre.valor,"Mayor");
+    t_info hizq;
+    strcpy(hizq.valor,idPivot);
+    t_info hder;
+    char nroString[100];
+    sprintf(nroString, "%d", cantLista);
+    char valorString[100];
+    strcpy(valorString, "@cantLista");
+    strcat(valorString, nroString);
+    strcpy(hder.valor,valorString);
+    aux = crearNodo(&padre,crearHoja(&hizq),crearHoja(&hder));
+
+    return aux;
+}
+
+t_nodo * crearMensajeValidacion()
+{
+    t_nodo * aux;
+    t_info padre;
+    strcpy(padre.valor,"WRITE");
+    t_info hizq;
+    strcpy(hizq.valor,"stdout");
+    t_info hder;
+    strcpy(hder.valor,"@errorCantLista");
     aux = crearNodo(&padre,crearHoja(&hizq),crearHoja(&hder));
 
     return aux;
@@ -623,11 +669,22 @@ void cargarDATA(FILE* fp, t_nodo *arbol){
 	}
 
     fprintf(fp,  "@rangoMinimo  dd 1.00\n");
-    fprintf(fp,  "@errorPivot  db \"El valor de pivot debe ser mayor o igual a 1.\", \"$\", 30 dup (?)\n");
+    fprintf(fp,  "@errorPivot  db \"El valor debe ser mayor o igual a 1.\", \"$\", 30 dup (?)\n");
     fprintf(fp,  "@cero  dd 0.00\n");
     fprintf(fp,  "@uno  dd 1.00\n");
     fprintf(fp,  "@pivot  dd ?\n");
-    
+    fprintf(fp,  "@listaVacia  db \"La lista esta vacia.\", \"$\", 30 dup (?)\n");
+    fprintf(fp,  "@errorCantLista  db \"La lista tiene menos elementos que el indicado.\", \"$\", 30 dup (?)\n");
+    t_nodo * aux;
+    for(int x = cantLista; x > 0; x--)
+    {
+        aux = (t_nodo *) malloc (sizeof(t_nodo));;
+        if(sacar_de_pila(&pilaTope, aux) != 0)
+        {
+            fprintf(fp,  "@cantLista%d  dd %d.00\n", x, aux->info.nro);
+        }
+    }
+
     //DECLARACION DE AUXILIARES
     int cantAux=contarAux(arbol);
     int j;
@@ -666,8 +723,7 @@ void generarCodigo (FILE* fp, t_nodo *arbol) {
     //recorrer_en_orden(arbol);
     recorrerGenerandoCodigo(arbol, fp);
 
-    /*fprintf(fp, "_ErrorPivot:\n");
-    fprintf(fp, "displayString @errorPivot\n");*/
+    fprintf(fp, "_fin:\n");
 }
 
 void recorrerGenerandoCodigo(t_nodo* nodo, FILE* fp)
@@ -686,6 +742,21 @@ void recorrerGenerandoCodigo(t_nodo* nodo, FILE* fp)
             fprintf(fp, "fstsw ax\n");
             fprintf(fp, "sahf\n");
             fprintf(fp, "jna _if%d\n", nroIf);
+            t_info info;
+            info.nro = nroIf;
+            t_nodo * nodoPila= crearHoja(&info);
+            ponerEnPila(&pilaIf, nodoPila);
+            nroIf++;
+        }
+        
+        if(strcmp(nodo->info.valor,"else")==0)
+        {
+            t_nodo * aux = (t_nodo *) malloc (sizeof(t_nodo));;
+            if(sacar_de_pila(&pilaIf, aux) != 0)
+            {
+                fprintf(fp, "jmp _if%d\n", aux->info.nro + 1);
+                fprintf(fp, "_if%d:\n", aux->info.nro);
+            }
         }
         recorrerGenerandoCodigo(nodo->izq,fp);
         recorrerGenerandoCodigo(nodo->der,fp);
@@ -722,12 +793,20 @@ void escribirAssembler(t_nodo* op1, t_nodo *op2, t_nodo *opr, FILE* pf)
         if(obtenerTipoDatoPorID(op2->info.valor)==1)
         {
             fprintf(pf,"displayFloat %s,2\n", op2->info.valor);
-            fprintf(pf, "newLine\n");
+        }
+        else if(strstr(op2->info.valor, "@"))
+        {
+            fprintf(pf,"displayString %s\n", op2->info.valor);
         }
         else
         {
             fprintf(pf,"displayString @str%d\n", obtenerIndiceTSPorValor(op2->info.valor));
-            fprintf(pf, "newLine\n");
+        }
+        fprintf(pf, "newLine\n");
+
+        if(strcmp(op2->info.valor, "@listaVacia") == 0)
+        {
+            fprintf(pf, "jmp _fin\n");
         }
     }
 
@@ -736,14 +815,17 @@ void escribirAssembler(t_nodo* op1, t_nodo *op2, t_nodo *opr, FILE* pf)
         if(obtenerTipoDatoPorID(op2->info.valor)==1)
         {
             fprintf(pf, "getFloat %s,2\n", op2->info.valor);
-            /*fprintf(pf, "fld %s\n", op2->info.valor);
+            fprintf(pf, "fld %s\n", op2->info.valor);
             fprintf(pf, "fld @rangoMinimo\n");
             fprintf(pf, "fxch\n");
             fprintf(pf, "fcomp\n");
             fprintf(pf, "ffree St(0)\n");
             fprintf(pf, "fstsw ax\n");
             fprintf(pf, "sahf\n");
-            fprintf(pf, "jna _ErrorPivot\n");*/
+            fprintf(pf, "jae _ErrorPivot\n");
+            fprintf(pf, "displayString @errorPivot\n");            
+            fprintf(pf, "jmp _fin\n");
+            fprintf(pf, "_ErrorPivot:\n");
         }
     }
 
@@ -810,19 +892,22 @@ void escribirAssembler(t_nodo* op1, t_nodo *op2, t_nodo *opr, FILE* pf)
 
     if(strcmp(opr->info.valor,"bloque_if")==0)
     {
-        fprintf(pf, "_if%d:\n", nroIf);
-        nroIf++;
-        /*aux = (t_nodo *) malloc (sizeof(t_nodo));;
-        sacar_de_pila(&pilaIf, aux);
-        fprintf(pf, "fld %s\n", aux->info.valor);
-        fprintf(pf, "fld %s\n", aux->info.valor);
-        fprintf(pf, "fxch\n");
-        fprintf(pf, "fcomp\n");
-        fprintf(pf, "ffree St(0)\n");
-        fprintf(pf, "fstsw ax\n");
-        fprintf(pf, "sahf\n");
-        fprintf(pf, "jna _if%d\n", nroIf);*/
+        aux = (t_nodo *) malloc (sizeof(t_nodo));;
+        if(sacar_de_pila(&pilaIf, aux) != 0)
+        {
+            fprintf(pf, "_if%d:\n", aux->info.nro);
+        }
     }
+
+    if(strcmp(opr->info.valor,"cuerpo")==0)
+    {
+        aux = (t_nodo *) malloc (sizeof(t_nodo));;
+        if(sacar_de_pila(&pilaIf, aux) != 0)
+        {
+            fprintf(pf, "_if%d:\n", aux->info.nro);
+        }
+    }
+
 }
 
 int obtenerIndiceTSPorValor(char* nombre)
