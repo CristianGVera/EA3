@@ -6,10 +6,12 @@ include number.asm
 .STACK 200h
 .DATA
 
-@str0   db "Ingrese un valor pivot mayor o igual a 1: ", "$", 30 dup (?)
-pivot   dd ?
-resul   dd ?
-@int3   dd 1.00
+@str0 	db "Ingrese un valor pivot mayor o igual a 1: ", "$", 30 dup (?)
+pivot 	dd ?
+resul 	dd ?
+@int3 	dd 1.00
+@int4 	dd 2.00
+@int5 	dd 3.00
 @rangoMinimo  dd 1.00
 @errorPivot  db "El valor debe ser mayor o igual a 1.", "$", 30 dup (?)
 @cero  dd 0.00
@@ -17,9 +19,13 @@ resul   dd ?
 @pivot  dd ?
 @listaVacia  db "La lista esta vacia.", "$", 30 dup (?)
 @errorCantLista  db "La lista tiene menos elementos que el indicado.", "$", 30 dup (?)
-@cantLista1  dd 1.00
-@aux1   dd ?
-@aux2   dd ?
+@cantLista1  dd 3.00
+@aux1	dd ?
+@aux2	dd ?
+@aux3	dd ?
+@aux4	dd ?
+@aux5	dd ?
+@aux6	dd ?
 
 .CODE
 
@@ -71,12 +77,59 @@ fstp @aux1
 fld @aux1
 fstp @pivot
 fld resul
-fld @int3
+fld @int5
 fadd
 fstp @aux2
 fld @aux2
 fstp resul
 _if1:
+fld @pivot
+fld @cero
+fxch
+fcomp
+ffree St(0)
+fstsw ax
+sahf
+jna _if2
+fld @pivot
+fld @uno
+fsub
+fstp @aux3
+fld @aux3
+fstp @pivot
+fld resul
+fld @int4
+fadd
+fstp @aux4
+fld @aux4
+fstp resul
+_if2:
+fld @pivot
+fld @cero
+fxch
+fcomp
+ffree St(0)
+fstsw ax
+sahf
+jna _if3
+fld @pivot
+fld @uno
+fsub
+fstp @aux5
+fld @aux5
+fstp @pivot
+fld resul
+fld @int3
+fadd
+fstp @aux6
+fld @aux6
+fstp resul
+_if3:
+displayFloat resul,2
+newLine
+displayString @listaVacia
+newLine
+jmp _fin
 displayFloat resul,2
 newLine
 _fin:

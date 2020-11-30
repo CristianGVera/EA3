@@ -52,6 +52,7 @@ t_nodo *write;
 t_nodo *asig;
 t_nodo *cola;
 t_nodo *lista;
+t_nodo *cte;
 int nroNodo = 0;
 char ultimoId[100];
 char idPivot[100];
@@ -170,7 +171,8 @@ asig:   ID  {
                 tope = 0;
             }
         RES_ASIG cola  {
-                            if(esListaVacia == 0)
+                            asig = cola;
+                            /*if(esListaVacia == 0)
                             {
                                 asig = cola;
                             }	
@@ -180,17 +182,17 @@ asig:   ID  {
                                 insertarHijo(&asig->izq,crearHojaT("stdout"));
                                 insertarHijo(&asig->der,crearHojaT("@listaVacia"));
                                 esListaVacia = 0;
-                            }
+                            }*/
                         };
 cola: RES_COLA RES_PARA ID RES_PYC RES_CORA lista RES_CORC RES_PARC {
-    strcpy(idPivot, $3);
     cola = lista;
+    strcpy(idPivot, $3);
     t_info infoTope;
     infoTope.nro = tope;
     t_nodo * nodoPila= crearHoja(&infoTope);
     cantLista++;
     ponerEnPila(&pilaTope, nodoPila);
-    for(int x = 0 ; x < tope; x++)
+    /*for(int x = 0 ; x < tope; x++)
     {
         if(x == 0)
         {
@@ -211,7 +213,7 @@ cola: RES_COLA RES_PARA ID RES_PYC RES_CORA lista RES_CORC RES_PARC {
             strcpy(sentencia.valor,"Sentencia");
             cola = crearNodo(&sentencia,aux,cola);
         }
-    }
+    }*/
     
     t_nodo * pivot = asignarPivot(idPivot);
     t_info bloque;
@@ -231,28 +233,40 @@ cola: RES_COLA RES_PARA ID RES_PYC RES_CORA lista RES_CORC RES_PARC {
 cola: RES_COLA RES_PARA ID RES_PYC RES_CORA RES_CORC RES_PARC   {
                                                                     printf("RES_COLA RES_PARA ID RES_PYC RES_CORA RES_CORC RES_PARC\n");
                                                                     esListaVacia = 1;
+                                cola=crearHojaT("WRITE");
+                                insertarHijo(&cola->izq,crearHojaT("stdout"));
+                                insertarHijo(&cola->der,crearHojaT("@listaVacia"));
                                                                 };
 lista: CTE  {
                 char valorString[100];
                 sprintf(valorString, "%d", $1);
                 cargarEnTS(valorString, 2);
                 listaConst[tope] = $1;
+                /////
+                t_info info_if;
+                strcpy(info_if.valor,"IF");
+                t_nodo * bloque_if = crearNodoBloqueIf(tope, ultimoId);
+                t_nodo * condicion = crearNodoCondicion();
+                lista = crearNodo(&info_if,condicion,bloque_if);
+                /////
                 tope++;
-                /*t_info info;
-                strcpy(info.valor,valorString);
-                lista = crearHoja(&info);*/
             };
 lista: lista RES_COMA CTE   {
                                 listaConst[tope] = $3;
-                                tope++;
                                 char valorString[100];
                                 sprintf(valorString, "%d", $3);
                                 cargarEnTS(valorString, 2);
-                                /*t_info infoPadre;
-                                strcpy(infoPadre.valor,"+");
-                                t_info infoIzq;
-                                strcpy(infoIzq.valor,valorString);
-                                lista = crearNodo(&infoPadre,crearHoja(&infoIzq),lista);*/
+                                ///
+                                t_info info_if;
+                                strcpy(info_if.valor,"IF");
+                                t_nodo * bloque_if = crearNodoBloqueIf(tope, ultimoId);
+                                t_nodo * condicion = crearNodoCondicion();
+                                t_nodo * aux = crearNodo(&info_if,condicion,bloque_if);
+                                t_info sentencia;
+                                strcpy(sentencia.valor,"Sentencia");
+                                lista = crearNodo(&sentencia,aux,lista);
+                                ///////
+                                tope++;
                             };
 write: RES_WRITE CTE_S  {
                             printf("RES_WRITE %s\n", $2);
