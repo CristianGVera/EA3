@@ -6,18 +6,18 @@ include number.asm
 .STACK 200h
 .DATA
 
-@str0   db "Ingrese un valor pivot mayor o igual a 1: ", "$", 30 dup (?)
-pivot   dd ?
-resul   dd ?
-@int3   dd 10.00
-@int4   dd 20.00
-@int5   dd 30.00
-@int6   dd 40.00
-@int7   dd 5.00
-@int8   dd 4.00
-@int9   dd 2.00
-@int10  dd 1.00
-@int11  dd 50.00
+@str0 	db "Ingrese un valor pivot mayor o igual a 1: ", "$", 30 dup (?)
+pivot 	dd ?
+resul 	dd ?
+@int3 	dd 10.00
+@int4 	dd 20.00
+@int5 	dd 30.00
+@int6 	dd 40.00
+@int7 	dd 5.00
+@int8 	dd 4.00
+@int9 	dd 2.00
+@int10 	dd 1.00
+@int11 	dd 50.00
 @rangoMinimo  dd 1.00
 @errorPivot  db "El valor debe ser mayor o igual a 1.", "$", 30 dup (?)
 @cero  dd 0.00
@@ -29,46 +29,46 @@ resul   dd ?
 @cantLista3  dd 4.00
 @cantLista2  dd 4.00
 @cantLista1  dd 6.00
-@aux1   dd ?
-@aux2   dd ?
-@aux3   dd ?
-@aux4   dd ?
-@aux5   dd ?
-@aux6   dd ?
-@aux7   dd ?
-@aux8   dd ?
-@aux9   dd ?
-@aux10  dd ?
-@aux11  dd ?
-@aux12  dd ?
-@aux13  dd ?
-@aux14  dd ?
-@aux15  dd ?
-@aux16  dd ?
-@aux17  dd ?
-@aux18  dd ?
-@aux19  dd ?
-@aux20  dd ?
-@aux21  dd ?
-@aux22  dd ?
-@aux23  dd ?
-@aux24  dd ?
-@aux25  dd ?
-@aux26  dd ?
-@aux27  dd ?
-@aux28  dd ?
-@aux29  dd ?
-@aux30  dd ?
-@aux31  dd ?
-@aux32  dd ?
-@aux33  dd ?
-@aux34  dd ?
-@aux35  dd ?
-@aux36  dd ?
-@aux37  dd ?
-@aux38  dd ?
-@aux39  dd ?
-@aux40  dd ?
+@aux1	dd ?
+@aux2	dd ?
+@aux3	dd ?
+@aux4	dd ?
+@aux5	dd ?
+@aux6	dd ?
+@aux7	dd ?
+@aux8	dd ?
+@aux9	dd ?
+@aux10	dd ?
+@aux11	dd ?
+@aux12	dd ?
+@aux13	dd ?
+@aux14	dd ?
+@aux15	dd ?
+@aux16	dd ?
+@aux17	dd ?
+@aux18	dd ?
+@aux19	dd ?
+@aux20	dd ?
+@aux21	dd ?
+@aux22	dd ?
+@aux23	dd ?
+@aux24	dd ?
+@aux25	dd ?
+@aux26	dd ?
+@aux27	dd ?
+@aux28	dd ?
+@aux29	dd ?
+@aux30	dd ?
+@aux31	dd ?
+@aux32	dd ?
+@aux33	dd ?
+@aux34	dd ?
+@aux35	dd ?
+@aux36	dd ?
+@aux37	dd ?
+@aux38	dd ?
+@aux39	dd ?
+@aux40	dd ?
 
 .CODE
 

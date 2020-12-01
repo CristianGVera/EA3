@@ -64,6 +64,7 @@ int nroIf = 0;
 t_pila pilaIf;
 t_pila pilaTope;
 int cantLista = 0;
+int tieneValidacion = 0;
 
 void insertarHijo(t_nodo ** , t_nodo * );
 t_nodo * crearHojaT(const char*);
@@ -79,6 +80,7 @@ int sacar_de_pila(t_pila*,t_nodo*);
 t_nodo * asignarPivot(char *);
 t_nodo * crearCondicionValidacion(int, char *);
 t_nodo * crearMensajeValidacion();
+t_nodo *  limpiarIdentificador(char * id);
 
 /*Generar archivo ts.txt*/
 void crearArchivoTS(void);
@@ -145,12 +147,29 @@ prog: sent  {
                 prog = sent;
             };
 prog: prog sent{
-                    t_info info;
-                    strcpy(info.valor,"sentencia");
-                    prog=crearNodo(&info,prog,sent);
+                    t_info sentencia;
+                    strcpy(sentencia.valor,"sentencia");
+                    prog=crearNodo(&sentencia,prog,sent);
                 };
 sent: read  {
                 sent = read;
+                t_info info_if;
+                strcpy(info_if.valor,"IF_VALIDA");
+                t_info write;
+                strcpy(write.valor,"WRITE");
+                t_nodo* bloque_if = crearNodo(&write, crearHojaT("stderr"), crearHojaT("@errorPivot"));
+                t_info info_lt;
+                strcpy(info_lt.valor,"Menor");
+                t_info hijo_izq;
+                strcpy(hijo_izq.valor,"pivot");
+                t_info hijo_der;
+                strcpy(hijo_der.valor,"@rangoMinimo");
+                t_nodo* condicion = crearNodo(&info_lt,crearHoja(&hijo_izq),crearHoja(&hijo_der));
+                t_nodo* aux = crearNodo(&info_if, condicion, bloque_if);
+                t_info sentencia;
+                strcpy(sentencia.valor,"validacion");
+                sent = crearNodo(&sentencia, read, aux );
+
             }|
     write   {
                 sent = write;
@@ -172,17 +191,6 @@ asig:   ID  {
             }
         RES_ASIG cola  {
                             asig = cola;
-                            /*if(esListaVacia == 0)
-                            {
-                                asig = cola;
-                            }	
-                            else
-                            {
-                                asig=crearHojaT("WRITE");
-                                insertarHijo(&asig->izq,crearHojaT("stdout"));
-                                insertarHijo(&asig->der,crearHojaT("@listaVacia"));
-                                esListaVacia = 0;
-                            }*/
                         };
 cola: RES_COLA RES_PARA ID RES_PYC RES_CORA lista RES_CORC RES_PARC {
     cola = lista;
@@ -192,33 +200,16 @@ cola: RES_COLA RES_PARA ID RES_PYC RES_CORA lista RES_CORC RES_PARC {
     t_nodo * nodoPila= crearHoja(&infoTope);
     cantLista++;
     ponerEnPila(&pilaTope, nodoPila);
-    /*for(int x = 0 ; x < tope; x++)
-    {
-        if(x == 0)
-        {
-            t_info info_if;
-            strcpy(info_if.valor,"IF");
-            t_nodo * bloque_if = crearNodoBloqueIf(x, ultimoId);
-            t_nodo * condicion = crearNodoCondicion();
-            cola = crearNodo(&info_if,condicion,bloque_if);
-        }
-        else
-        {
-            t_info info_if;
-            strcpy(info_if.valor,"IF");
-            t_nodo * bloque_if = crearNodoBloqueIf(x, ultimoId);
-            t_nodo * condicion = crearNodoCondicion();
-            t_nodo * aux = crearNodo(&info_if,condicion,bloque_if);
-            t_info sentencia;
-            strcpy(sentencia.valor,"Sentencia");
-            cola = crearNodo(&sentencia,aux,cola);
-        }
-    }*/
     
+    t_nodo * limpiarId = limpiarIdentificador(ultimoId);
+    t_info infoSent;
+    strcpy(infoSent.valor,"sentencia");
+    t_nodo * nodoLimpiarId = crearNodo(&infoSent,limpiarId,lista);
+
     t_nodo * pivot = asignarPivot(idPivot);
     t_info bloque;
     strcpy(bloque.valor,"else");
-    t_nodo * falso = crearNodo(&bloque,pivot,cola);
+    t_nodo * falso = crearNodo(&bloque,pivot,nodoLimpiarId);
     t_info cuerpo;
     strcpy(cuerpo.valor,"cuerpo");
     t_nodo * verdadero = crearMensajeValidacion();
@@ -489,6 +480,20 @@ t_nodo * crearMensajeValidacion()
     return aux;
 }
 
+t_nodo *  limpiarIdentificador(char * id)
+{
+    t_nodo * aux;
+    t_info padre;
+    strcpy(padre.valor,"=");
+    t_info hizq;
+    strcpy(hizq.valor,id);
+    t_info hder;
+    strcpy(hder.valor,"@cero");
+    aux = crearNodo(&padre,crearHoja(&hizq),crearHoja(&hder));
+
+    return aux;
+}
+
 /*Generar archivo arbol.dot*/
 void generarArchivoGraphViz(t_nodo *raiz){
     nroNodo=0;
@@ -624,7 +629,7 @@ int cargarEnTS ( char *nombre, int val ){
 
 /*Generar archivo EA3.asm*/
 void generarAssembler(t_nodo* arbol){
-    FILE*fp=fopen("EA3.asm","w+");
+    FILE*fp=fopen("Final.asm","w+");
     if(!fp){
         printf("Error al generar el assembler.\n");
         return;
@@ -744,6 +749,22 @@ void recorrerGenerandoCodigo(t_nodo* nodo, FILE* fp)
 {
     if(nodo)
 	{
+        if(strcmp(nodo->info.valor,"IF_VALIDA")==0)
+        {
+            t_nodo *aux = nodo->izq;
+            fprintf(fp, "fld %s\n", aux->izq->info.valor);
+            fprintf(fp, "fld %s\n", aux->der->info.valor);
+            fprintf(fp, "fxch\n");
+            fprintf(fp, "fcomp\n");
+            fprintf(fp, "ffree St(0)\n");
+            fprintf(fp, "fstsw ax\n");
+            fprintf(fp, "sahf\n");
+            fprintf(fp, "jae _ErrorPivot\n");
+            /*fprintf(fp, "displayString @errorPivot\n");            
+            fprintf(fp, "jmp _fin\n");
+            fprintf(fp, "_ErrorPivot:\n");*/
+        }
+
         if(strcmp(nodo->info.valor,"IF")==0)
         {
             //ponerEnPila(&pilaIf, nodo->izq);
@@ -818,10 +839,10 @@ void escribirAssembler(t_nodo* op1, t_nodo *op2, t_nodo *opr, FILE* pf)
         }
         fprintf(pf, "newLine\n");
 
-        if(strcmp(op2->info.valor, "@listaVacia") == 0)
+        /*if(strcmp(op2->info.valor, "@listaVacia") == 0)
         {
             fprintf(pf, "jmp _fin\n");
-        }
+        }*/
     }
 
     if(strcmp(opr->info.valor,"READ")==0)
@@ -829,7 +850,7 @@ void escribirAssembler(t_nodo* op1, t_nodo *op2, t_nodo *opr, FILE* pf)
         if(obtenerTipoDatoPorID(op2->info.valor)==1)
         {
             fprintf(pf, "getFloat %s,2\n", op2->info.valor);
-            fprintf(pf, "fld %s\n", op2->info.valor);
+            /*fprintf(pf, "fld %s\n", op2->info.valor);
             fprintf(pf, "fld @rangoMinimo\n");
             fprintf(pf, "fxch\n");
             fprintf(pf, "fcomp\n");
@@ -839,7 +860,7 @@ void escribirAssembler(t_nodo* op1, t_nodo *op2, t_nodo *opr, FILE* pf)
             fprintf(pf, "jae _ErrorPivot\n");
             fprintf(pf, "displayString @errorPivot\n");            
             fprintf(pf, "jmp _fin\n");
-            fprintf(pf, "_ErrorPivot:\n");
+            fprintf(pf, "_ErrorPivot:\n");*/
         }
     }
 
@@ -893,7 +914,7 @@ void escribirAssembler(t_nodo* op1, t_nodo *op2, t_nodo *opr, FILE* pf)
 
     if(strcmp(opr->info.valor,"=")==0)
     {
-        if(obtenerTipoDatoPorID(op2->info.valor) == 1)
+        if(obtenerTipoDatoPorID(op2->info.valor) == 1 || strstr(op2->info.valor,"@"))
         {
             fprintf(pf,"fld %s\n", op2->info.valor);
         }
@@ -922,6 +943,11 @@ void escribirAssembler(t_nodo* op1, t_nodo *op2, t_nodo *opr, FILE* pf)
         }
     }
 
+    if(strcmp(op2->info.valor,"IF_VALIDA")==0)
+    {
+        fprintf(pf, "jmp _fin\n");
+        fprintf(pf, "_ErrorPivot:\n");
+    }
 }
 
 int obtenerIndiceTSPorValor(char* nombre)
